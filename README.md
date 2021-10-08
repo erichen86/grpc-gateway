@@ -94,6 +94,8 @@ This will place four binaries in your `$GOBIN`;
 
 Make sure that your `$GOBIN` is in your `$PATH`.
 
+Alternatively, see the section on remotely managed plugin versions below.
+
 ## Usage
 
 1. Define your [gRPC](https://grpc.io/docs/) service using protocol buffers
@@ -121,7 +123,7 @@ Make sure that your `$GOBIN` is in your `$PATH`.
    Here's an example `buf.gen.yaml` you can use to generate the stubs with [buf](https://github.com/bufbuild/buf):
 
    ```yaml
-   version: v1beta1
+   version: v1
    plugins:
      - name: go
        out: gen/go
@@ -172,7 +174,7 @@ Make sure that your `$GOBIN` is in your `$PATH`.
    Here's what a `buf.gen.yaml` file might look like with this option enabled:
 
    ```yaml
-   version: v1beta1
+   version: v1
    plugins:
      - name: go
        out: gen/go
@@ -233,7 +235,7 @@ Make sure that your `$GOBIN` is in your `$PATH`.
    > be added to the `deps` array in your `buf.yaml` under the name
    > `buf.build/googleapis/googleapis`:
    > ```yaml
-   > version: v1beta1
+   > version: v1
    > name: buf.build/yourorg/myprotos
    > deps:
    >   - buf.build/googleapis/googleapis
@@ -247,7 +249,7 @@ Make sure that your `$GOBIN` is in your `$PATH`.
    Here's what a `buf.gen.yaml` file might look like:
 
    ```yaml
-   version: v1beta1
+   version: v1
    plugins:
      - name: go
        out: gen/go
@@ -297,7 +299,7 @@ Make sure that your `$GOBIN` is in your `$PATH`.
    Here's what a `buf.gen.yaml` file might look like with this option enabled:
 
    ```yaml
-   version: v1beta1
+   version: v1
    plugins:
      - name: go
        out: gen/go
@@ -382,7 +384,7 @@ Make sure that your `$GOBIN` is in your `$PATH`.
    Here's what a `buf.gen.yaml` file might look like:
 
    ```yaml
-   version: v1beta1
+   version: v1
    plugins:
      - name: go
        out: gen/go
@@ -405,7 +407,7 @@ Make sure that your `$GOBIN` is in your `$PATH`.
    `buf`, you can add the `buf.build/grpc-ecosystem/grpc-gateway` dependency
    to your `deps` array:
    ```yaml
-   version: v1beta1
+   version: v1
    name: buf.build/yourorg/myprotos
    deps:
      - buf.build/googleapis/googleapis
@@ -427,6 +429,41 @@ Make sure that your `$GOBIN` is in your `$PATH`.
    Note that this plugin also supports generating OpenAPI definitions for unannotated methods;
    use the `generate_unbound_methods` option to enable this.
 
+## Usage with remote plugins
+
+As an alternative to all of the above, you can use `buf` with
+[remote plugins](https://docs.buf.build/configuration/v1/buf-gen-yaml#name-or-remote)
+to manage plugin versions and generation. An example `buf.gen.yaml` using remote
+plugin generation looks like this:
+
+```yaml
+version: v1
+plugins:
+  - remote: buf.build/library/plugins/go:v1.27.1-1
+    out: gen/go
+    opt:
+      - paths=source_relative
+  - remote: buf.build/library/plugins/go-grpc:v1.1.0-2
+    out: gen/go
+    opt:
+      - paths=source_relative
+  - remote: buf.build/grpc-ecosystem/plugins/grpc-gateway:v2.6.0-1
+    out: gen/go
+    opt:
+      - paths=source_relative
+  - remote: buf.build/grpc-ecosystem/plugins/openapiv2:v2.6.0-1
+    out: gen/openapiv2
+```
+
+This requires no local installation of any plugins. Be careful to use the same
+version of the generator as the runtime library, i.e. if using `v2.6.0-1`, run
+
+```shell
+$ go get github.com/grpc-ecosystem/grpc-gateway/v2@v2.6.0
+```
+
+To get the same version of the runtime in your `go.mod`.
+
 ## Video intro
 
 This GopherCon UK 2019 presentation from our maintainer [@JohanBrandhorst](https://github.com/johanbrandhorst) provides a good intro to using the gRPC-Gateway. It uses the following boilerplate repo as a base: https://github.com/johanbrandhorst/grpc-gateway-boilerplate.
@@ -443,7 +480,7 @@ When using `buf` to generate stubs, flags and parameters are passed through
 the `opt` field in your `buf.gen.yaml` file, for example:
 
 ```yaml
-version: v1beta1
+version: v1
 plugins:
   - name: grpc-gateway
     out: gen/go
